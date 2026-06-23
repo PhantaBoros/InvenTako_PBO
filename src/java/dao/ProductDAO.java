@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Product;
 
+/**
+ *
+ * @author Muhammad Sabiq AZ
+ */
 public class ProductDAO {
     // Ambil semua produk milik manager tertentu
     public List<Product> getAll(int managerId) {
@@ -41,45 +45,58 @@ public class ProductDAO {
         return list;
     }
 
-    // Cek apakah kode barang sudah ada di toko manager ini
-    public boolean isKodeExists(String kode, int managerId) {
-        boolean exists = false;
+    public List<Product> getAvailable(int managerId) {
+        List<Product> list = new ArrayList<>();
         try {
             Connection conn = DatabaseConnection.getConnection();
-            String sql = "SELECT COUNT(*) FROM products WHERE kode = ? AND manager_id = ?";
+            String sql = "SELECT * FROM products WHERE manager_id = ? AND stok > 0 ORDER BY nama ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, kode);
-            ps.setInt(2, managerId);
+            ps.setInt(1, managerId);
             ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                exists = rs.getInt(1) > 0;
+
+            while (rs.next()) {
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setKode(rs.getString("kode"));
+                p.setNama(rs.getString("nama"));
+                p.setKategori(rs.getString("kategori"));
+                p.setHarga(rs.getLong("harga"));
+                p.setStok(rs.getInt("stok"));
+                p.setManagerId(rs.getInt("manager_id"));
+
+                list.add(p);
             }
         } catch (Exception e) {
-            System.out.println("Error di isKodeExists: " + e.getMessage());
+            System.out.println("Error di getAvailable Produk: " + e.getMessage());
         }
-        return exists;
+        return list;
     }
 
-    // Cek duplikat kode, tapi abaikan barang yang sedang diedit (excludeId)
-    public boolean isKodeExistsExcept(String kode, int managerId, int excludeId) {
-        boolean exists = false;
+    public List<Product> getOutOfStock(int managerId) {
+        List<Product> list = new ArrayList<>();
         try {
             Connection conn = DatabaseConnection.getConnection();
-            String sql = "SELECT COUNT(*) FROM products WHERE kode = ? AND manager_id = ? AND id != ?";
+            String sql = "SELECT * FROM products WHERE manager_id = ? AND stok <= 0 ORDER BY nama ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, kode);
-            ps.setInt(2, managerId);
-            ps.setInt(3, excludeId);
+            ps.setInt(1, managerId);
             ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                exists = rs.getInt(1) > 0;
+
+            while (rs.next()) {
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setKode(rs.getString("kode"));
+                p.setNama(rs.getString("nama"));
+                p.setKategori(rs.getString("kategori"));
+                p.setHarga(rs.getLong("harga"));
+                p.setStok(rs.getInt("stok"));
+                p.setManagerId(rs.getInt("manager_id"));
+
+                list.add(p);
             }
         } catch (Exception e) {
-            System.out.println("Error di isKodeExistsExcept: " + e.getMessage());
+            System.out.println("Error di getOutOfStock Produk: " + e.getMessage());
         }
-        return exists;
+        return list;
     }
 
     // Insert produk baru, otomatis set manager_id

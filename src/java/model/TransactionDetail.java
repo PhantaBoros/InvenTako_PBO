@@ -4,6 +4,10 @@
  */
 package model;
 
+/**
+ *
+ * @author Muhammad Sabiq AZ
+ */
 public class TransactionDetail {
     private int    id;
     private int    transactionId;

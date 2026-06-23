@@ -195,10 +195,6 @@
                         required
                         type="password"
                     />
-                    <button type="button" onclick="togglePassword('password', this)"
-                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors">
-                        <span class="material-symbols-outlined text-lg">visibility_off</span>
-                    </button>
                 </div>
             </div>
 
@@ -288,18 +284,6 @@
         }
         // Jika valid, form akan di-submit secara normal ke AuthServlet (POST)
     });
-
-    function togglePassword(inputId, btn) {
-        const input = document.getElementById(inputId);
-        const icon  = btn.querySelector('.material-symbols-outlined');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.textContent = 'visibility';
-        } else {
-            input.type = 'password';
-            icon.textContent = 'visibility_off';
-        }
-    }
 </script>
 
 </body>

@@ -1,16 +1,26 @@
-    <%@page contentType="text/html" pageEncoding="UTF-8" %>
-        <%@ page import="java.util.List" %>
-            <%-- Model yang dibutuhkan: - com.inventako.model.Product (id, kode, nama, kategori, harga, stok) Servlet
-                Contract: - request.setAttribute("productList", List<Product>)
-                - request.setAttribute("editProduct", Product) — isi form edit (optional)
-                - request.setAttribute("errorMessage", String)
-                - request.setAttribute("successMessage", String)
-                - Aksi tambah : POST ProductServlet?action=add
-                - Aksi edit : POST ProductServlet?action=edit
-                - Aksi hapus : POST ProductServlet?action=delete + productId
-                --%>
-                <% List<?> productList = (List
-                    <?>) request.getAttribute("productList");
+<%-- 
+    Document   : kelola_barang
+    Created on : 12 Jun 2026, 14.29.35
+    Author     : Muhammad Sabiq AZ
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%--
+    Model yang dibutuhkan:
+    - com.inventako.model.Product (id, kode, nama, kategori, harga, stok)
+
+    Servlet Contract:
+    - request.setAttribute("productList",     List<Product>)
+    - request.setAttribute("editProduct",     Product)   — isi form edit (optional)
+    - request.setAttribute("errorMessage",    String)
+    - request.setAttribute("successMessage",  String)
+    - Aksi tambah : POST ProductServlet?action=add
+    - Aksi edit   : POST ProductServlet?action=edit
+    - Aksi hapus  : POST ProductServlet?action=delete  + productId
+--%>
+<%
+    List<?> productList     = (List<?>) request.getAttribute("productList");
     Object  editProductAttr = request.getAttribute("editProduct");
     model.Product editProduct = editProductAttr != null
         ? (model.Product) editProductAttr : null;
@@ -133,12 +143,14 @@
                                         class="text-slate-700 hover:text-black">
                                         <i data-lucide="edit" class="w-4 h-4"></i>
                                     </button>
-                                    <%-- Tombol Hapus: buka modal konfirmasi hapus --%>
-                                    <button type="button"
-                                        onclick="openDeleteModal('<%= p.getId() %>', '<%= p.getNama().replace("'", "\\'" ) %>')"
-                                        class="text-red-500 hover:text-red-700">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
+                                    <%-- Tombol Hapus: form POST ke ProductServlet?action=delete --%>
+                                    <form action="${pageContext.request.contextPath}/ProductServlet?action=delete" method="POST"
+                                          onsubmit="return confirm('Yakin hapus barang <%= p.getNama() %>?');">
+                                        <input type="hidden" name="productId" value="<%= p.getId() %>"/>
+                                        <button type="submit" class="text-red-500 hover:text-red-700">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -155,7 +167,7 @@
          MODAL TAMBAH BARANG
          action: POST ProductServlet?action=add
          ============================================================ -->
-    <div id="modalTambah" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div id="modalTambah" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-slate-900">Tambah Barang Baru</h2>
@@ -172,15 +184,9 @@
                 </div>
                 <div class="col-span-2 sm:col-span-1">
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">Kategori</label>
-                    <select name="kategori" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0044ff]/20 bg-white">
-                        <option value="" disabled selected>Pilih Kategori</option>
-                        <option value="Makanan">Makanan</option>
-                        <option value="Perabotan">Perabotan</option>
-                        <option value="Elektronik">Elektronik</option>
-                        <option value="Pakaian">Pakaian</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
+                    <input type="text" name="kategori" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0044ff]/20"
+                        placeholder="Minuman">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">Nama Barang</label>
@@ -218,7 +224,7 @@
          MODAL EDIT BARANG
          action: POST ProductServlet?action=edit
          ============================================================ -->
-    <div id="modalEdit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div id="modalEdit" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-slate-900">Edit Barang</h2>
@@ -235,14 +241,8 @@
                 </div>
                 <div class="col-span-2 sm:col-span-1">
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">Kategori</label>
-                    <select id="editKategori" name="kategori" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0044ff]/20 bg-white">
-                        <option value="Makanan">Makanan</option>
-                        <option value="Perabotan">Perabotan</option>
-                        <option value="Elektronik">Elektronik</option>
-                        <option value="Pakaian">Pakaian</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
+                    <input type="text" id="editKategori" name="kategori" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0044ff]/20">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">Nama Barang</label>
@@ -270,31 +270,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Delete Confirm Modal -->
-    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <i data-lucide="trash-2" class="w-6 h-6 text-red-600"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900">Hapus Barang?</h2>
-                    <p class="text-sm text-slate-500" id="deleteProductName"></p>
-                </div>
-            </div>
-            <p class="text-slate-600 mb-6">Tindakan ini tidak dapat dibatalkan. Barang akan dihapus secara permanen.</p>
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-900 font-semibold rounded-lg transition-colors">Batal</button>
-                <form id="deleteForm" action="${pageContext.request.contextPath}/ProductServlet?action=delete" method="POST" class="flex-1">
-                    <input type="hidden" id="deleteProductId" name="productId"/>
-                    <button type="submit" class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus
-                    </button>
-                </form>
-            </div>
         </div>
     </div>
 
@@ -331,11 +306,11 @@
 
         function openModalEdit(id, kode, nama, kategori, harga, stok) {
             document.getElementById('editProductId').value = id;
-            document.getElementById('editKode').value = kode;
-            document.getElementById('editNama').value = nama;
-            document.getElementById('editKategori').value = kategori;
-            document.getElementById('editHarga').value = harga;
-            document.getElementById('editStok').value = stok;
+            document.getElementById('editKode').value      = kode;
+            document.getElementById('editNama').value      = nama;
+            document.getElementById('editKategori').value  = kategori;
+            document.getElementById('editHarga').value     = harga;
+            document.getElementById('editStok').value      = stok;
             document.getElementById('modalEdit').classList.remove('hidden');
             document.getElementById('modalEdit').classList.add('flex');
         }
@@ -348,28 +323,18 @@
         function confirmLogout() { document.getElementById('logoutConfirmModal').classList.remove('hidden'); }
         function cancelLogout()  { document.getElementById('logoutConfirmModal').classList.add('hidden'); }
 
-        function openDeleteModal(id, nama) {
-            document.getElementById('deleteProductId').value = id;
-            document.getElementById('deleteProductName').textContent = nama;
-            document.getElementById('deleteConfirmModal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-        function closeDeleteModal() {
-            document.getElementById('deleteConfirmModal').classList.add('hidden');
-        }
-
         <%-- Jika ada editProduct dari Servlet (redirect setelah error edit), buka modal edit langsung --%>
         <% if (editProduct != null) { %>
-            window.addEventListener('DOMContentLoaded', () => {
-                openModalEdit(
-                    '<%= editProduct.getId() %>',
-                    '<%= editProduct.getKode() %>',
-                    '<%= editProduct.getNama().replace("'", "\\'") %>',
-                    '<%= editProduct.getKategori() %>',
-                    '<%= editProduct.getHarga() %>',
-                    '<%= editProduct.getStok() %>'
-                );
-            });
+        window.addEventListener('DOMContentLoaded', () => {
+            openModalEdit(
+                '<%= editProduct.getId() %>',
+                '<%= editProduct.getKode() %>',
+                '<%= editProduct.getNama().replace("'", "\\'") %>',
+                '<%= editProduct.getKategori() %>',
+                '<%= editProduct.getHarga() %>',
+                '<%= editProduct.getStok() %>'
+            );
+        });
         <% } %>
     </script>
 

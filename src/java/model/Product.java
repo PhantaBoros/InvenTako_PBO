@@ -4,6 +4,10 @@
  */
 package model;
 
+/**
+ *
+ * @author Muhammad Sabiq AZ
+ */
 public class Product {
     private int    id;
     private String kode;

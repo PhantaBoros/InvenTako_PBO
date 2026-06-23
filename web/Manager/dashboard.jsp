@@ -6,7 +6,23 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
+<%--
+    Model yang dibutuhkan:
+    - com.inventako.model.Transaction (semua field)
+    - com.inventako.model.Product (untuk top product chart)
 
+    Servlet Contract:
+    - request.setAttribute("transactionList",  List<Transaction>)
+    - request.setAttribute("topProductList",   List<Object[]>) — [namaBarang, totalQty]
+    - request.setAttribute("hourlyData",       List<Object[]>) — [jam, jumlahTransaksi]
+    - request.setAttribute("totalRevenue",     Long)
+    - request.setAttribute("totalCount",       Integer)
+    - request.setAttribute("totalBarang",      Integer)
+    - request.setAttribute("totalStok",        Integer)
+    - request.setAttribute("managerName",      String)
+    - Endpoint history  : ManagerServlet?action=history
+    - Endpoint export   : ManagerServlet?action=exportPdf
+--%>
 <%
     Object totalRevenueAttr = request.getAttribute("totalRevenue");
     Object totalCountAttr   = request.getAttribute("totalCount");
@@ -73,7 +89,7 @@
 
         <main class="flex-1 p-8 overflow-y-auto bg-white ml-56" id="dashboardContent">
 
-            <!-- area yang di-capture waktu export PDF -->
+            <!-- Export Area: Stat Cards + Charts (yang di-capture saat export PDF) -->
             <div id="exportArea" class="bg-white">
 
                 <!-- Header Export -->
@@ -105,7 +121,7 @@
                 <!-- Charts Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
 
-                    <%-- grafik barang terlaris --%>
+                    <%-- Canvas: Barang Terlaris — diisi oleh Chart.js dengan data dari Servlet --%>
                     <div class="p-6 border border-slate-200 rounded-lg shadow-sm bg-white">
                         <h2 class="text-base font-bold text-black mb-4">Barang Terlaris</h2>
                         <div class="relative h-64">
@@ -113,11 +129,11 @@
                         </div>
                     </div>
 
-                    <%-- Grafik transaksi per shift --%>
+                    <%-- Canvas: Waktu Transaksi Tersibuk — diisi oleh Chart.js dengan data dari Servlet --%>
                     <div class="p-6 border border-slate-200 rounded-lg shadow-sm bg-white">
-                        <h2 class="text-base font-bold text-black mb-4">Waktu Tersibuk (per Shift)</h2>
+                        <h2 class="text-base font-bold text-black mb-4">Waktu Tersibuk (per Jam)</h2>
                         <div class="relative h-64">
-                            <canvas id="chartShift"></canvas>
+                            <canvas id="chartHourly"></canvas>
                         </div>
                     </div>
                 </div>
@@ -209,7 +225,11 @@
         function confirmLogout() { document.getElementById('logoutConfirmModal').classList.remove('hidden'); }
         function cancelLogout()  { document.getElementById('logoutConfirmModal').classList.add('hidden'); }
 
-        // data untuk chart, diambil dari servlet
+        // ============================================================
+        // DATA CHART — Di-inject dari JSP (server-side)
+        // Servlet set: request.setAttribute("topProductList", List<Object[]>)
+        //              request.setAttribute("hourlyData",     List<Object[]>)
+        // ============================================================
 
         <%-- Data Barang Terlaris --%>
         const topProductLabels = [
@@ -236,29 +256,22 @@
                } %>
         ];
 
-        <%-- Data Waktu Tersibuk per Shift --%>
-        const shiftLabels = [];
-        const shiftData   = [];
-        // Warna per shift: Pagi=kuning/orange, Siang=biru, Sore=ungu, Malam=navy
-        const shiftColorMap = {
-            'Pagi':  '#F59E0B',
-            'Siang': '#3B82F6',
-            'Sore':  '#8B5CF6',
-            'Malam': '#1E3A5F'
-        };
-        const shiftColors = [];
+        <%-- Data Waktu Tersibuk --%>
+        const hourlyLabels = [];
+        const hourlyData   = [];
+        for (let h = 0; h < 24; h++) { hourlyLabels.push(h + ':00'); hourlyData.push(0); }
 
-        <%  List<?> shiftList = (List<?>) request.getAttribute("shiftData");
-            if (shiftList != null && !shiftList.isEmpty()) {
-                for (Object row : shiftList) {
+        <%  List<?> hourlyList = (List<?>) request.getAttribute("hourlyData");
+            if (hourlyList != null && !hourlyList.isEmpty()) {
+                for (Object row : hourlyList) {
                     Object[] arr = (Object[]) row; %>
-        shiftLabels.push("<%= arr[0] %> (<%= arr[1] %> transaksi)");
-        shiftData.push(<%= arr[1] %>);
-        shiftColors.push(shiftColorMap["<%= arr[0] %>"] || '#94A3B8');
+        hourlyData[<%= arr[0] %>] = <%= arr[1] %>;
         <%      }
             } %>
 
-        // render chart barang terlaris
+        // ============================================================
+        // RENDER CHART — Canvas: chartTopProducts
+        // ============================================================
         new Chart(document.getElementById('chartTopProducts'), {
             type: 'bar',
             data: {
@@ -277,15 +290,39 @@
             }
         });
 
-        // render pie chart per shift
-        new Chart(document.getElementById('chartShift'), {
+        // ============================================================
+        // RENDER CHART — Canvas: chartHourly (Pie Chart)
+        // Hanya tampilkan jam yang ada transaksinya
+        // ============================================================
+        const pieColors = [
+            '#0044ff','#3366ff','#6688ff','#99aaff',
+            '#0033cc','#0055ee','#4477ff','#7799ff',
+            '#2255dd','#5577ee','#88aaff','#aabbff',
+            '#001188','#003399','#0044bb','#1155cc',
+            '#2266dd','#3377ee','#4488ff','#6699ff',
+            '#0022aa','#0033bb','#1144cc','#2255dd'
+        ];
+
+        // Filter hanya jam yang ada transaksinya
+        const pieLabels = [];
+        const pieData   = [];
+        const pieClrs   = [];
+        for (let h = 0; h < 24; h++) {
+            if (hourlyData[h] > 0) {
+                pieLabels.push(h + ':00');
+                pieData.push(hourlyData[h]);
+                pieClrs.push(pieColors[h % pieColors.length]);
+            }
+        }
+
+        new Chart(document.getElementById('chartHourly'), {
             type: 'pie',
             data: {
-                labels: shiftLabels.length > 0 ? shiftLabels : ['Belum ada data'],
+                labels: pieLabels.length > 0 ? pieLabels : ['Belum ada data'],
                 datasets: [{
                     label: 'Jumlah Transaksi',
-                    data: shiftData.length > 0 ? shiftData : [1],
-                    backgroundColor: shiftLabels.length > 0 ? shiftColors : ['#e2e8f0'],
+                    data: pieData.length > 0 ? pieData : [1],
+                    backgroundColor: pieLabels.length > 0 ? pieClrs : ['#e2e8f0'],
                     borderColor: '#ffffff',
                     borderWidth: 2
                 }]
@@ -298,9 +335,8 @@
                         display: true,
                         position: 'right',
                         labels: {
-                            boxWidth: 14,
-                            font: { size: 12, weight: '600' },
-                            padding: 16
+                            boxWidth: 12,
+                            font: { size: 11 }
                         }
                     },
                     tooltip: {
@@ -308,7 +344,7 @@
                             label: function(ctx) {
                                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                                 const pct   = ((ctx.parsed / total) * 100).toFixed(1);
-                                return ' ' + ctx.parsed + ' transaksi (' + pct + '%)';
+                                return ' ' + ctx.label + ': ' + ctx.parsed + ' transaksi (' + pct + '%)';
                             }
                         }
                     }
@@ -316,7 +352,9 @@
             }
         });
 
-        // export dashboard jadi PDF
+        // ============================================================
+        // EXPORT PDF — Hanya capture stat cards + grafik (exportArea)
+        // ============================================================
         async function exportDashboardPdf() {
             const btn  = document.getElementById('btnExportPdf');
             const orig = btn.innerHTML;

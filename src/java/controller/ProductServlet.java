@@ -4,6 +4,10 @@
  */
 package controller;
 
+/**
+ *
+ * @author Muhammad Sabiq AZ
+ */
 import dao.ProductDAO;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -65,12 +69,6 @@ public class ProductServlet extends HttpServlet {
             long harga      = Long.parseLong(request.getParameter("harga"));
             int stok        = Integer.parseInt(request.getParameter("stok"));
             
-            // Cek apakah kode barang sudah ada di toko ini
-            if (dao.isKodeExists(kode, managerId)) {
-                response.sendRedirect(base + "?error=Kode+barang+sudah+dipakai+di+toko+ini");
-                return;
-            }
-            
             Product p = new Product(0, kode, nama, kategori, harga, stok, managerId);
             boolean berhasil = dao.insert(p);
             
@@ -88,12 +86,6 @@ public class ProductServlet extends HttpServlet {
             String kategori = request.getParameter("kategori");
             long harga      = Long.parseLong(request.getParameter("harga"));
             int stok        = Integer.parseInt(request.getParameter("stok"));
-            
-            // Cek duplikat kode: boleh sama kalau kode-nya milik barang yang sedang diedit
-            if (dao.isKodeExistsExcept(kode, managerId, id)) {
-                response.sendRedirect(base + "?error=Kode+barang+sudah+dipakai+di+toko+ini");
-                return;
-            }
             
             Product p = new Product(id, kode, nama, kategori, harga, stok, managerId);
             boolean berhasil = dao.update(p);

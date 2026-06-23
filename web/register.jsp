@@ -202,14 +202,10 @@
                             id="password"
                             name="password"
                             required
-                            class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg p-4 pr-12 text-sm font-medium transition-all outline-none text-on-surface"
+                            class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg p-4 text-sm font-medium transition-all outline-none text-on-surface"
                             placeholder="••••••••"
                             type="password"
                         />
-                        <button type="button" onclick="togglePassword('password', this)"
-                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors">
-                            <span class="material-symbols-outlined text-lg">visibility_off</span>
-                        </button>
                     </div>
                 </div>
 
@@ -223,14 +219,10 @@
                             id="confirmPassword"
                             name="confirmPassword"
                             required
-                            class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg p-4 pr-12 text-sm font-medium transition-all outline-none text-on-surface"
+                            class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg p-4 text-sm font-medium transition-all outline-none text-on-surface"
                             placeholder="••••••••"
                             type="password"
                         />
-                        <button type="button" onclick="togglePassword('confirmPassword', this)"
-                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors">
-                            <span class="material-symbols-outlined text-lg">visibility_off</span>
-                        </button>
                     </div>
                 </div>
 
@@ -337,18 +329,6 @@
 
         // Jika semua valid, form akan di-submit ke AuthServlet?action=register (POST)
     });
-
-    function togglePassword(inputId, btn) {
-        const input = document.getElementById(inputId);
-        const icon  = btn.querySelector('.material-symbols-outlined');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.textContent = 'visibility';
-        } else {
-            input.type = 'password';
-            icon.textContent = 'visibility_off';
-        }
-    }
 </script>
 
 </body>

@@ -37,8 +37,7 @@ CREATE TABLE IF NOT EXISTS products (
     harga       BIGINT       NOT NULL,
     stok        INT          NOT NULL DEFAULT 0,
     manager_id  INT          NOT NULL,       -- barang milik toko manager mana
-    FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (kode, manager_id)               -- kode barang unik per toko
+    FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- ============================================================
@@ -74,8 +73,6 @@ CREATE TABLE IF NOT EXISTS transaction_details (
 -- ============================================================
 -- DATA AWAL: Akun admin (langsung approved, bisa login)
 -- Email: admin@gmail.com | Password: admin123
--- Password di bawah adalah SHA-256 hash dari 'admin123'
--- Hash: 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a
 -- ============================================================
 INSERT INTO users (username, email, password, role, status)
-VALUES ('Admin', 'admin@gmail.com', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a', 'admin', 'approved');
+VALUES ('Admin', 'admin@gmail.com', 'admin123', 'admin', 'approved');

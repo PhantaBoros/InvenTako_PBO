@@ -6,8 +6,12 @@ package model;
 
 import java.security.Timestamp;
 
+/**
+ *
+ * @author Muhammad Sabiq AZ
+ */
 public class Manager extends User{
-    private Timestamp createdAt;
+     private Timestamp createdAt;
 
     // Constructor kosong
     public Manager() {

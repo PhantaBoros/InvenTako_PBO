@@ -1,0 +1,42 @@
+<div id="profileModal" class="hidden fixed inset-0 z-[60] items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <h2 class="text-lg font-bold text-slate-900">Profil Kasir</h2>
+            <button type="button" onclick="closeProfileModal()" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+        <div class="p-5 space-y-4 text-sm text-slate-700">
+            <div class="flex items-center gap-4">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#0044ff] text-[#0044ff] bg-blue-50 text-xl font-bold tracking-wider">
+                    <%= initials %>
+                </div>
+                <div>
+                    <p class="text-lg font-semibold text-slate-900"><%= userName %></p>
+                    <p class="text-slate-500"><%= user.getRole() != null ? user.getRole().toUpperCase() : "KASIR" %></p>
+                </div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+                <div class="flex items-center justify-between gap-4">
+                    <span>Email</span>
+                    <span class="font-semibold text-slate-900 text-right"><%= user.getEmail() != null ? user.getEmail() : "-" %></span>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span>Shift</span>
+                    <span class="font-semibold text-slate-900"><%= user.getShift() != null ? user.getShift() : "-" %></span>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span>Status</span>
+                    <span class="font-semibold text-slate-900"><%= user.getStatus() != null ? user.getStatus() : "-" %></span>
+                </div>
+            </div>
+            <div class="flex gap-3 pt-1">
+                <button type="button" onclick="closeProfileModal()" class="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 hover:bg-slate-50">Tutup</button>
+                <form action="${pageContext.request.contextPath}/AuthServlet" method="POST" class="flex-1">
+                    <input type="hidden" name="action" value="logout" />
+                    <button type="submit" class="w-full rounded-xl bg-[#0044ff] px-4 py-3 font-semibold text-white hover:bg-blue-700">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,3 +1,9 @@
+<%-- 
+    Document   : history_transaksi
+    Created on : 12 Jun 2026, 14.29.16
+    Author     : Muhammad Sabiq AZ
+--%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%--
@@ -29,9 +35,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <%-- jsPDF + html2canvas untuk download struk (teknologi sama seperti dashboard) --%>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
@@ -155,11 +158,10 @@
                                 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold"><%= status %></span>
                             </td>
                             <td class="py-3 px-4 text-sm text-center">
-                                <%-- Tombol Lihat Detail — trigger AJAX modal --%>
-                                <button onclick="lihatDetail(<%= trx.getId() %>)"
-                                    class="text-[#0044ff] hover:bg-blue-100 px-3 py-1.5 rounded text-xs font-semibold border border-blue-200 transition-colors">
+                                <a href="${pageContext.request.contextPath}/manager/history/detail?id=<%= trx.getId() %>"
+                                   class="text-[#0044ff] hover:bg-blue-100 px-3 py-1.5 rounded text-xs font-semibold border border-blue-200 transition-colors">
                                     Lihat Detail
-                                </button>
+                                </a>
                             </td>
                         </tr>
                         <%  }
@@ -169,150 +171,6 @@
             </div>
 
         </main>
-    </div>
-
-    <%-- ============================================================
-         MODAL DETAIL TRANSAKSI
-         ============================================================ --%>
-    <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
-
-            <%-- Header Modal --%>
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                        <i data-lucide="receipt" class="w-5 h-5 text-[#0044ff]"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-900">Detail Transaksi</h2>
-                        <p class="text-xs text-slate-400" id="modalNoNota">—</p>
-                    </div>
-                </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-red-500 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <%-- Loading State --%>
-            <div id="modalLoading" class="flex-1 flex items-center justify-center py-12">
-                <div class="flex flex-col items-center gap-3 text-slate-400">
-                    <i data-lucide="loader" class="w-8 h-8 animate-spin"></i>
-                    <p class="text-sm">Memuat data...</p>
-                </div>
-            </div>
-
-            <%-- Content (tersembunyi saat loading) --%>
-            <div id="modalContent" class="hidden flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
-
-                <%-- Info Header Transaksi --%>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50 rounded-lg p-3">
-                        <p class="text-xs font-bold uppercase text-slate-400 mb-1">Tanggal</p>
-                        <p class="text-sm font-semibold text-slate-800" id="modalTanggal">—</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-lg p-3">
-                        <p class="text-xs font-bold uppercase text-slate-400 mb-1">Kasir</p>
-                        <p class="text-sm font-semibold text-slate-800" id="modalKasir">—</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-lg p-3">
-                        <p class="text-xs font-bold uppercase text-slate-400 mb-1">Uang Tunai</p>
-                        <p class="text-sm font-semibold text-slate-800" id="modalUangTunai">—</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-lg p-3">
-                        <p class="text-xs font-bold uppercase text-slate-400 mb-1">Kembalian</p>
-                        <p class="text-sm font-semibold text-slate-800" id="modalKembalian">—</p>
-                    </div>
-                </div>
-
-                <%-- Tabel Item Belanja --%>
-                <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                        <i data-lucide="shopping-cart" class="w-4 h-4 text-[#0044ff]"></i>
-                        Daftar Item
-                    </h3>
-                    <div class="border border-slate-200 rounded-lg overflow-hidden">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="bg-slate-100 border-b border-slate-200">
-                                    <th class="py-2 px-3 font-semibold text-slate-600 text-xs">Nama Barang</th>
-                                    <th class="py-2 px-3 font-semibold text-slate-600 text-xs text-center">Qty</th>
-                                    <th class="py-2 px-3 font-semibold text-slate-600 text-xs text-right">Harga</th>
-                                    <th class="py-2 px-3 font-semibold text-slate-600 text-xs text-right">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalItemsBody">
-                                <!-- diisi via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <%-- Total --%>
-                <div class="flex items-center justify-between bg-[#0044ff]/5 border border-[#0044ff]/20 rounded-lg px-4 py-3">
-                    <span class="text-sm font-bold text-slate-700">Total Belanja</span>
-                    <span class="text-lg font-extrabold text-[#0044ff]" id="modalTotal">—</span>
-                </div>
-
-            </div>
-
-            <%-- Footer Tombol --%>
-            <div id="modalFooter" class="hidden border-t border-slate-100 px-6 py-4 flex gap-3">
-                <button onclick="closeDetailModal()"
-                    class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors text-sm">
-                    Tutup
-                </button>
-                <button id="btnDownloadStruk" onclick="downloadStruk()"
-                    class="flex-1 px-4 py-2.5 bg-[#0044ff] hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    Download Struk
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <%-- ============================================================
-         STRUK PRINT AREA — hidden off-screen, di-capture oleh html2canvas
-         (Teknologi sama persis seperti dashboard: screenshot HTML -> PDF)
-         ============================================================ --%>
-    <div id="strukPrintArea" style="position:fixed; left:-9999px; top:0; width:320px; background:#fff; padding:24px; font-family:'Inter',sans-serif;">
-        <div style="text-align:center; margin-bottom:12px;">
-            <div style="font-size:20px; font-weight:800; color:#0044ff; letter-spacing:-0.5px;">InvenTako</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Struk Pembelian</div>
-        </div>
-        <div style="border-top:2px solid #e2e8f0; margin-bottom:12px;"></div>
-        <div style="font-size:11px; color:#475569; margin-bottom:10px; line-height:1.8;">
-            <div><span style="display:inline-block;width:80px;font-weight:600;">No. Nota</span>: <span id="sp_noNota"></span></div>
-            <div><span style="display:inline-block;width:80px;font-weight:600;">Tanggal</span>: <span id="sp_tanggal"></span></div>
-            <div><span style="display:inline-block;width:80px;font-weight:600;">Kasir</span>: <span id="sp_kasir"></span></div>
-            <div><span style="display:inline-block;width:80px;font-weight:600;">Status</span>: <span id="sp_status"></span></div>
-        </div>
-        <div style="border-top:1px dashed #cbd5e1; margin-bottom:8px;"></div>
-        <table style="width:100%; font-size:11px; border-collapse:collapse; margin-bottom:8px;">
-            <thead>
-                <tr style="font-weight:700; color:#1e293b; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:4px 0;">Barang</td>
-                    <td style="padding:4px 4px; text-align:center;">Qty</td>
-                    <td style="padding:4px 0; text-align:right;">Harga</td>
-                    <td style="padding:4px 0; text-align:right;">Subtotal</td>
-                </tr>
-            </thead>
-            <tbody id="sp_items"></tbody>
-        </table>
-        <div style="border-top:1px dashed #cbd5e1; margin-bottom:10px;"></div>
-        <div style="font-size:11px; color:#475569; line-height:1.9;">
-            <div style="display:flex; justify-content:space-between;"><span>Uang Tunai</span><span id="sp_tunai"></span></div>
-            <div style="display:flex; justify-content:space-between;"><span>Kembalian</span><span id="sp_kembalian"></span></div>
-        </div>
-        <div style="border-top:2px solid #e2e8f0; margin:10px 0;"></div>
-        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:800; color:#0044ff;">
-            <span>TOTAL</span><span id="sp_total"></span>
-        </div>
-        <div style="border-top:2px solid #e2e8f0; margin:10px 0;"></div>
-        <div style="text-align:center; font-size:10px; color:#94a3b8; line-height:1.8;">
-            <div>Terima kasih telah berbelanja!</div>
-            <div>InvenTako &mdash; Powered by PBO Project</div>
-        </div>
     </div>
 
     <!-- Logout Confirm Modal -->
@@ -340,163 +198,9 @@
     <script>
         lucide.createIcons();
         window.addEventListener('load', () => lucide.createIcons());
-
-        // ── Logout ─────────────────────────────────────────────────
         function confirmLogout() { document.getElementById('logoutConfirmModal').classList.remove('hidden'); }
         function cancelLogout()  { document.getElementById('logoutConfirmModal').classList.add('hidden'); }
 
-        // ── State detail transaksi yang sedang dibuka ───────────────
-        let currentTrx = null;
-
-        // ── Helper: format angka ke Rupiah ──────────────────────────
-        function rupiah(n) {
-            return 'Rp ' + Number(n).toLocaleString('id-ID');
-        }
-
-        // ── Buka modal & fetch detail via AJAX ──────────────────────
-        function lihatDetail(id) {
-            currentTrx = null;
-            document.getElementById('modalLoading').classList.remove('hidden');
-            document.getElementById('modalContent').classList.add('hidden');
-            document.getElementById('modalFooter').classList.add('hidden');
-            document.getElementById('modalNoNota').textContent = '—';
-            document.getElementById('detailModal').classList.remove('hidden');
-            lucide.createIcons();
-
-            fetch('${pageContext.request.contextPath}/manager/history/detail?id=' + id)
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data.error) {
-                        closeDetailModal();
-                        return;
-                    }
-                    currentTrx = data;
-                    renderModal(data);
-                })
-                .catch(function() { closeDetailModal(); });
-        }
-
-        // ── Render data ke dalam modal ──────────────────────────────
-        function renderModal(data) {
-            document.getElementById('modalNoNota').textContent    = data.noNota;
-            document.getElementById('modalTanggal').textContent   = data.tanggal;
-            document.getElementById('modalKasir').textContent     = data.kasir;
-            document.getElementById('modalUangTunai').textContent = rupiah(data.uangTunai);
-            document.getElementById('modalKembalian').textContent = rupiah(data.kembalian);
-            document.getElementById('modalTotal').textContent     = rupiah(data.totalBelanja);
-
-            const tbody = document.getElementById('modalItemsBody');
-            tbody.innerHTML = '';
-            if (!data.items || data.items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400 text-xs">Tidak ada item</td></tr>';
-            } else {
-                data.items.forEach(function(item) {
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-slate-100 last:border-0';
-                    tr.innerHTML =
-                        '<td class="py-2 px-3 text-slate-800">' + item.namaBarang + '</td>' +
-                        '<td class="py-2 px-3 text-center text-slate-600">' + item.qty + '</td>' +
-                        '<td class="py-2 px-3 text-right text-slate-600">' + rupiah(item.hargaSatuan) + '</td>' +
-                        '<td class="py-2 px-3 text-right font-semibold text-slate-800">' + rupiah(item.subtotal) + '</td>';
-                    tbody.appendChild(tr);
-                });
-            }
-
-            document.getElementById('modalLoading').classList.add('hidden');
-            document.getElementById('modalContent').classList.remove('hidden');
-            document.getElementById('modalFooter').classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        // ── Tutup modal ─────────────────────────────────────────────
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-            currentTrx = null;
-        }
-
-        // ── Download Struk — html2canvas + jsPDF ────────────────────
-        // Teknologi identik dengan dashboard: screenshot elemen HTML -> PDF
-        async function downloadStruk() {
-            if (!currentTrx) return;
-
-            // 1. Isi template struk (#strukPrintArea) dengan data transaksi
-            document.getElementById('sp_noNota').textContent    = currentTrx.noNota;
-            document.getElementById('sp_tanggal').textContent   = currentTrx.tanggal;
-            document.getElementById('sp_kasir').textContent     = currentTrx.kasir;
-            document.getElementById('sp_status').textContent    = currentTrx.status;
-            document.getElementById('sp_tunai').textContent     = rupiah(currentTrx.uangTunai);
-            document.getElementById('sp_kembalian').textContent = rupiah(currentTrx.kembalian);
-            document.getElementById('sp_total').textContent     = rupiah(currentTrx.totalBelanja);
-
-            const spItems = document.getElementById('sp_items');
-            spItems.innerHTML = '';
-            (currentTrx.items || []).forEach(function(item) {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid #f1f5f9';
-                tr.innerHTML =
-                    '<td style="padding:3px 0; color:#1e293b;">' + item.namaBarang + '</td>' +
-                    '<td style="padding:3px 4px; text-align:center; color:#475569;">' + item.qty + '</td>' +
-                    '<td style="padding:3px 0; text-align:right; color:#475569;">' + rupiah(item.hargaSatuan) + '</td>' +
-                    '<td style="padding:3px 0; text-align:right; font-weight:600; color:#1e293b;">' + rupiah(item.subtotal) + '</td>';
-                spItems.appendChild(tr);
-            });
-
-            // 2. Ubah tombol jadi loading (sama persis seperti dashboard)
-            const btn  = document.getElementById('btnDownloadStruk');
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Menyusun...';
-            btn.disabled  = true;
-            lucide.createIcons();
-
-            try {
-                // 3. Capture elemen struk dengan html2canvas
-                const strukEl = document.getElementById('strukPrintArea');
-                const canvas  = await html2canvas(strukEl, {
-                    scale: 3,
-                    backgroundColor: '#ffffff',
-                    useCORS: true
-                });
-                const imgData = canvas.toDataURL('image/png');
-
-                // 4. Buat PDF A5 portrait & sisipkan gambar (sama seperti dashboard)
-                const { jsPDF } = window.jspdf;
-                const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
-                const pageW = pdf.internal.pageSize.getWidth();
-                const pageH = pdf.internal.pageSize.getHeight();
-                const imgW  = pageW - 20;
-                const imgH  = (canvas.height * imgW) / canvas.width;
-                const posX  = 10;
-                const posY  = 10;
-
-                // Multi-page jika konten melebihi satu halaman
-                if (imgH <= pageH - 20) {
-                    pdf.addImage(imgData, 'PNG', posX, posY, imgW, imgH);
-                } else {
-                    let remainingH = imgH;
-                    let offsetY    = 0;
-                    while (remainingH > 0) {
-                        const sliceH = Math.min(remainingH, pageH - 20);
-                        pdf.addImage(imgData, 'PNG', posX, posY - offsetY, imgW, imgH);
-                        remainingH -= sliceH;
-                        offsetY    += sliceH;
-                        if (remainingH > 0) pdf.addPage();
-                    }
-                }
-
-                pdf.save('Struk-' + currentTrx.noNota + '.pdf');
-            } catch (e) {
-                console.error('Gagal download struk:', e);
-            } finally {
-                btn.innerHTML = orig;
-                btn.disabled  = false;
-                lucide.createIcons();
-            }
-        }
-
-        // Tutup modal jika klik backdrop
-        document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDetailModal();
-        });
 
     </script>
 
