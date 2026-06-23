@@ -4,10 +4,6 @@
  */
 package model;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
 public class User {
     private int    id;
     private String username;
@@ -15,8 +11,8 @@ public class User {
     private String password;
     private String role;
     private String shift;
-    private int    managerId; 
-    private String status;     
+    private int    managerId;  // untuk kasir: ID manager pemilik toko
+    private String status;     // status akun: 'pending' atau 'approved'
 
     // Constructor kosong
     public User() {}

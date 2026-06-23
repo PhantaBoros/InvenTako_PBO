@@ -12,10 +12,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import model.User;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
 @WebServlet(name = "AuthServlet", urlPatterns = {"/AuthServlet"})
 public class AuthServlet extends HttpServlet {
 

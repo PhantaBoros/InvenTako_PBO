@@ -3,7 +3,7 @@ build/
 dist/
 nbbuild/
 
-# Konfigurasi lokal NetBeans (WAJIB diblokir agar tidak bentrok di laptop lain)
+# Konfigurasi lokal NetBeans
 nbproject/private/
 
 # File hasil kompilasi Java

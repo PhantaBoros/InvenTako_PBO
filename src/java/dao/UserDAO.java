@@ -14,11 +14,14 @@ import java.util.List;
 import model.Kasir;
 import model.User;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
 public class UserDAO {
+
+    /**
+     * Hash password menggunakan SHA-256.
+     * Digunakan pada: login, register, tambahKasir.
+     * @param password password plain text
+     * @return hex string SHA-256, atau password asli jika gagal (fallback)
+     */
     public static String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -159,5 +162,3 @@ public class UserDAO {
         return berhasil;
     }
 }
-
-

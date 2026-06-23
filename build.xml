@@ -7,8 +7,8 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="Tubes_PBO_Ril" default="default" basedir=".">
-    <description>Builds, tests, and runs the project Tubes_PBO_Ril.</description>
+<project name="Tubes_PBO" default="default" basedir=".">
+    <description>Builds, tests, and runs the project Tubes_PBO.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
 

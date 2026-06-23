@@ -12,10 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Product;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
 public class ProductDAO {
     // Ambil semua produk milik manager tertentu
     public List<Product> getAll(int managerId) {
@@ -44,6 +40,119 @@ public class ProductDAO {
         }
         return list;
     }
+
+    // Cek apakah kode barang sudah ada di toko manager ini
+    public boolean isKodeExists(String kode, int managerId) {
+        boolean exists = false;
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "SELECT COUNT(*) FROM products WHERE kode = ? AND manager_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, kode);
+            ps.setInt(2, managerId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                exists = rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di isKodeExists: " + e.getMessage());
+        }
+        return exists;
+    }
+
+    // Cek duplikat kode, tapi abaikan barang yang sedang diedit (excludeId)
+    public boolean isKodeExistsExcept(String kode, int managerId, int excludeId) {
+        boolean exists = false;
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "SELECT COUNT(*) FROM products WHERE kode = ? AND manager_id = ? AND id != ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, kode);
+            ps.setInt(2, managerId);
+            ps.setInt(3, excludeId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                exists = rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di isKodeExistsExcept: " + e.getMessage());
+        }
+        return exists;
+    }
+
+    // Insert produk baru, otomatis set manager_id
+    public boolean insert(Product p) {
+        boolean berhasil = false;
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "INSERT INTO products (kode, nama, kategori, harga, stok, manager_id) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            ps.setString(1, p.getKode());
+            ps.setString(2, p.getNama());
+            ps.setString(3, p.getKategori());
+            ps.setLong(4, p.getHarga());
+            ps.setInt(5, p.getStok());
+            ps.setInt(6, p.getManagerId());
+            
+            int jumlahBaris = ps.executeUpdate();
+            if (jumlahBaris > 0) {
+                berhasil = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di insert Produk: " + e.getMessage());
+        }
+        return berhasil;
+    }
+
+    // Update produk — hanya bisa edit barang milik manager sendiri
+    public boolean update(Product p) {
+        boolean berhasil = false;
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "UPDATE products SET kode=?, nama=?, kategori=?, harga=?, stok=? WHERE id=? AND manager_id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            ps.setString(1, p.getKode());
+            ps.setString(2, p.getNama());
+            ps.setString(3, p.getKategori());
+            ps.setLong(4, p.getHarga());
+            ps.setInt(5, p.getStok());
+            ps.setInt(6, p.getId());
+            ps.setInt(7, p.getManagerId());
+            
+            int jumlahBaris = ps.executeUpdate();
+            if (jumlahBaris > 0) {
+                berhasil = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di update Produk: " + e.getMessage());
+        }
+        return berhasil;
+    }
+
+    // Delete produk — hanya bisa hapus barang milik manager sendiri
+    public boolean delete(int id, int managerId) {
+        boolean berhasil = false;
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "DELETE FROM products WHERE id=? AND manager_id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ps.setInt(2, managerId);
+            
+            int jumlahBaris = ps.executeUpdate();
+            if (jumlahBaris > 0) {
+                berhasil = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di delete Produk: " + e.getMessage());
+        }
+        return berhasil;
+    }
+
     // Hitung total stok hanya untuk toko manager tersebut
     public int getTotalStok(int managerId) {
         int total = 0;

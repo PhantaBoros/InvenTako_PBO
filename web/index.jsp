@@ -7,4 +7,4 @@
 <%
     response.sendRedirect("login.jsp");
 %>
-</html>
+

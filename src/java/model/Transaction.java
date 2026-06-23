@@ -4,10 +4,6 @@
  */
 package model;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
 public class Transaction {
     private int    id;
     private String noNota;

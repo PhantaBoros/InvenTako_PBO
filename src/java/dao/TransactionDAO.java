@@ -13,11 +13,6 @@ import java.util.List;
 import model.Transaction;
 import model.TransactionDetail;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
-
 public class TransactionDAO {
     // Get all Transactions milik toko manager ini
     // Filter: kasir yang melakukan transaksi harus punya manager_id yang sama
@@ -52,8 +47,60 @@ public class TransactionDAO {
         }
         return list;
     }
-    
-    // Total pendapatan 
+
+    // Search Transactions — hanya dalam lingkup toko manager ini
+    public List<Transaction> search(String noNota, String tanggal, int managerId) {
+        List<Transaction> list = new ArrayList<>();
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "SELECT t.*, u.username AS kasir_name "
+                       + "FROM transactions t "
+                       + "LEFT JOIN users u ON t.kasir_id = u.id "
+                       + "WHERE u.manager_id = ?";
+            
+            // Tambahkan filter jika tidak kosong
+            if (noNota != null && !noNota.isEmpty()) {
+                sql += " AND t.no_nota LIKE ?";
+            }
+            if (tanggal != null && !tanggal.isEmpty()) {
+                sql += " AND DATE(t.tanggal) = ?";
+            }
+            sql += " ORDER BY t.tanggal DESC";
+            
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // Atur urutan tanda tanya (?)
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, managerId);
+            if (noNota != null && !noNota.isEmpty()) {
+                ps.setString(paramIndex++, "%" + noNota + "%");
+            }
+            if (tanggal != null && !tanggal.isEmpty()) {
+                ps.setString(paramIndex, tanggal);
+            }
+            
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Transaction t = new Transaction();
+                t.setId(rs.getInt("id"));
+                t.setNoNota(rs.getString("no_nota"));
+                t.setTanggal(rs.getString("tanggal"));
+                t.setTotalBelanja(rs.getLong("total_belanja"));
+                t.setUangTunai(rs.getLong("uang_tunai"));
+                t.setKembalian(rs.getLong("kembalian"));
+                t.setStatus(rs.getString("status"));
+                t.setKasirName(rs.getString("kasir_name"));
+                
+                list.add(t);
+            }
+        } catch (Exception e) {
+            System.out.println("Error di search Transaction: " + e.getMessage());
+        }
+        return list;
+    }
+
+    // Total pendapatan hanya dari kasir di toko manager ini
     public long getTotalRevenue(int managerId) {
         long total = 0;
         try {
@@ -75,7 +122,7 @@ public class TransactionDAO {
         return total;
     }
 
-    // Jumlah transaksi 
+    // Jumlah transaksi hanya dari kasir di toko manager ini
     public int getTotalCount(int managerId) {
         int count = 0;
         try {
@@ -97,7 +144,7 @@ public class TransactionDAO {
         return count;
     }
 
-    // Top Products
+    // Top Products — hanya dari transaksi kasir di toko manager ini
     public List<Object[]> getTopProducts(int limit, int managerId) {
         List<Object[]> list = new ArrayList<>();
         try {
@@ -127,7 +174,7 @@ public class TransactionDAO {
         return list;
     }
 
-    // Data transaksi per shift
+    // Data transaksi per shift — untuk chart dashboard
     public List<Object[]> getShiftData(int managerId) {
         List<Object[]> list = new ArrayList<>();
         try {
@@ -157,6 +204,64 @@ public class TransactionDAO {
             }
         } catch (Exception e) {
             System.out.println("Error di getShiftData: " + e.getMessage());
+        }
+        return list;
+    }
+
+    // Ambil satu transaksi berdasarkan id — divalidasi juga bahwa kasir milik manager ini
+    public Transaction getById(int id, int managerId) {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "SELECT t.*, u.username AS kasir_name "
+                       + "FROM transactions t "
+                       + "LEFT JOIN users u ON t.kasir_id = u.id "
+                       + "WHERE t.id = ? AND u.manager_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ps.setInt(2, managerId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Transaction t = new Transaction();
+                t.setId(rs.getInt("id"));
+                t.setNoNota(rs.getString("no_nota"));
+                t.setTanggal(rs.getString("tanggal"));
+                t.setTotalBelanja(rs.getLong("total_belanja"));
+                t.setUangTunai(rs.getLong("uang_tunai"));
+                t.setKembalian(rs.getLong("kembalian"));
+                t.setStatus(rs.getString("status"));
+                t.setKasirName(rs.getString("kasir_name"));
+                return t;
+            }
+        } catch (Exception e) {
+            System.out.println("Error di getById Transaction: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // Get All Detail Transactions (tidak perlu filter manager — sudah lewat transaction_id)
+    public List<TransactionDetail> getDetailByTransactionId(int transactionId) {
+        List<TransactionDetail> list = new ArrayList<>();
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            String sql = "SELECT * FROM transaction_details WHERE transaction_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, transactionId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                TransactionDetail td = new TransactionDetail();
+                td.setId(rs.getInt("id"));
+                td.setTransactionId(rs.getInt("transaction_id"));
+                td.setNamaBarang(rs.getString("nama_barang"));
+                td.setQty(rs.getInt("qty"));
+                td.setHargaSatuan(rs.getLong("harga_satuan"));
+                td.setSubtotal(rs.getLong("subtotal"));
+                
+                list.add(td);
+            }
+        } catch (Exception e) {
+            System.out.println("Error di getDetailByTransactionId: " + e.getMessage());
         }
         return list;
     }

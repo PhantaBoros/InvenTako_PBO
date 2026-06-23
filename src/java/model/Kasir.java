@@ -6,11 +6,6 @@ package model;
 
 import java.sql.Timestamp;
 
-/**
- *
- * @author Muhammad Sabiq AZ
- */
-
 public class Kasir extends User{
     private Timestamp createdAt;
 
