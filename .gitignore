@@ -1,0 +1,15 @@
+# Folder kompilasi otomatis bawaan NetBeans
+build/
+dist/
+nbbuild/
+
+# Konfigurasi lokal NetBeans
+nbproject/private/
+
+# File hasil kompilasi Java
+*.class
+*.war
+
+# File cache bawaan OS (Windows & Mac)
+Thumbs.db
+.DS_Store
